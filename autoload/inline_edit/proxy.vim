@@ -31,6 +31,8 @@ function! inline_edit#proxy#New(controller, start_line, end_line, start_col, end
     autocmd BufWriteCmd <buffer> silent call b:inline_edit_proxy.UpdateOriginalBuffer()
   elseif g:inline_edit_proxy_type == 'tempfile'
     autocmd BufWritePost <buffer> silent call b:inline_edit_proxy.UpdateOriginalBuffer()
+  elseif g:inline_edit_proxy_type == 'vscode'
+    autocmd TextChanged,TextChangedI <buffer> silent call b:inline_edit_proxy.UpdateOriginalBuffer()
   endif
 
   return proxy
@@ -176,6 +178,15 @@ function! s:CreateProxyBuffer(proxy, lines)
     call append(0, lines)
     $delete _
     write
+  elseif g:inline_edit_proxy_type == 'vscode'
+    lua vim.cmd.Edit(vim.fn.tempname())
+    sleep 500m
+    setlocal nowrite
+    setlocal buftype=acwrite
+    setlocal bufhidden=wipe
+    call append(0, lines)
+    $delete _
+    set nomodified
   endif
 
   let &readonly = saved_readonly
